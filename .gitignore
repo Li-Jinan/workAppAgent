@@ -2,6 +2,9 @@
 application-local.yml
 tmp
 .DS_Store
+.env
+*.env
+!.env.example
 
 HELP.md
 target/

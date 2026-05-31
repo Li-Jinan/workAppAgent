@@ -9,9 +9,9 @@ spring:
   # redis
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
-      database: 0
+      host: ${SPRING_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_REDIS_PORT:6379}
+      database: ${SPRING_REDIS_DATABASE:0}
       password: ${SPRING_REDIS_PASSWORD:}
       ttl: 3600
 server:

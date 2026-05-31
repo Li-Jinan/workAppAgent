@@ -1,0 +1,37 @@
+services:
+  work-app-agent-backend:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: work-app-agent-backend
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/work_app_agent?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      SPRING_REDIS_HOST: host.docker.internal
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_DATABASE: 1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - work-app-agent-net
+
+  work-app-agent-frontend:
+    build:
+      context: ../../work-app-agent-frontend
+      dockerfile: Dockerfile
+    container_name: work-app-agent-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-18081}:80"
+    depends_on:
+      - work-app-agent-backend
+    networks:
+      - work-app-agent-net
+
+networks:
+  work-app-agent-net:
+    name: work-app-agent-net
