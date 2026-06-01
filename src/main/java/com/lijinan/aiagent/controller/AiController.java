@@ -2,11 +2,10 @@ package com.lijinan.aiagent.controller;
 
 import com.lijinan.aiagent.agent.LijinanManus;
 import com.lijinan.aiagent.app.WorkApp;
-import jakarta.annotation.Resource;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ai.tool.ToolCallback;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,18 +20,19 @@ import java.io.IOException;
 @RequestMapping("/ai")
 public class AiController {
 
-    @Resource
-    @Lazy
-    private WorkApp workApp;
+    private final ObjectProvider<WorkApp> workAppProvider;
 
-    @Resource
-    @Lazy
-    private ToolCallback[] allTools;
+    private final ObjectProvider<ToolCallback[]> allToolsProvider;
 
-    @Resource
-    @Qualifier("openAiChatModel")
-    @Lazy
-    private ChatModel chatModel;
+    private final ObjectProvider<ChatModel> chatModelProvider;
+
+    public AiController(ObjectProvider<WorkApp> workAppProvider,
+                        ObjectProvider<ToolCallback[]> allToolsProvider,
+                        @Qualifier("openAiChatModel") ObjectProvider<ChatModel> chatModelProvider) {
+        this.workAppProvider = workAppProvider;
+        this.allToolsProvider = allToolsProvider;
+        this.chatModelProvider = chatModelProvider;
+    }
 
     /**
      * 同步调用 AI 工作助手应用
@@ -43,7 +43,7 @@ public class AiController {
      */
     @GetMapping("/work_app/chat/sync")
     public String doChatWithWorkAppSync(String message, String chatId) {
-        return workApp.doChat(message, chatId);
+        return workAppProvider.getObject().doChat(message, chatId);
     }
 
     /**
@@ -55,7 +55,7 @@ public class AiController {
      */
     @GetMapping(value = "/work_app/chat/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> doChatWithWorkAppSSE(String message, String chatId) {
-        return workApp.doChatByStream(message, chatId);
+        return workAppProvider.getObject().doChatByStream(message, chatId);
     }
 
     /**
@@ -67,7 +67,7 @@ public class AiController {
      */
     @GetMapping(value = "/work_app/chat/server_sent_event")
     public Flux<ServerSentEvent<String>> doChatWithWorkAppServerSentEvent(String message, String chatId) {
-        return workApp.doChatByStream(message, chatId)
+        return workAppProvider.getObject().doChatByStream(message, chatId)
                 .map(chunk -> ServerSentEvent.<String>builder()
                         .data(chunk)
                         .build());
@@ -85,7 +85,7 @@ public class AiController {
         // 创建一个超时时间较长的 SseEmitter
         SseEmitter sseEmitter = new SseEmitter(180000L); // 3 分钟超时
         // 获取 Flux 响应式数据流并且直接通过订阅推送给 SseEmitter
-        workApp.doChatByStream(message, chatId)
+        workAppProvider.getObject().doChatByStream(message, chatId)
                 .subscribe(chunk -> {
                     try {
                         sseEmitter.send(chunk);
@@ -105,7 +105,7 @@ public class AiController {
      */
     @GetMapping("/manus/chat")
     public SseEmitter doChatWithManus(String message) {
-        LijinanManus lijinanManus = new LijinanManus(allTools, chatModel);
+        LijinanManus lijinanManus = new LijinanManus(allToolsProvider.getObject(), chatModelProvider.getObject());
         return lijinanManus.runStream(message);
     }
 }
