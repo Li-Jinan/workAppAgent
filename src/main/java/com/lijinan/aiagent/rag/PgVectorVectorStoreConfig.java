@@ -5,6 +5,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,8 +15,8 @@ import java.util.List;
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistanceType.COSINE_DISTANCE;
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
 
-// 为方便开发调试和部署，临时注释，如果需要使用 PgVector 存储知识库，取消注释即可
-//@Configuration
+@Configuration
+@ConditionalOnProperty(prefix = "workapp.rag.pgvector", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class PgVectorVectorStoreConfig {
 
     @Resource

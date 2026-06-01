@@ -75,3 +75,11 @@ aliYunAi:
 logging:
   level:
     org.springframework.ai: DEBUG
+workapp:
+  rag:
+    local-vector:
+      enabled: false
+    cloud:
+      enabled: false
+    pgvector:
+      enabled: false

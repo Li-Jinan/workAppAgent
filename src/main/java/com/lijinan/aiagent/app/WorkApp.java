@@ -9,7 +9,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
@@ -19,7 +18,9 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -124,16 +125,9 @@ public class WorkApp {
     // AI 工作知识库问答功能
 
     @Lazy
-    @Resource
-    private VectorStore workAppVectorStore;
-
-    @Lazy
-    @Resource
-    private Advisor workAppRagCloudAdvisor;
-
-    @Lazy
-    @Resource
-    private VectorStore pgVectorVectorStore;
+    @Autowired
+    @Qualifier("workAppVectorStore")
+    private ObjectProvider<VectorStore> workAppVectorStoreProvider;
 
     @Lazy
     @Resource
@@ -147,6 +141,11 @@ public class WorkApp {
      * @return
      */
     public String doChatWithRag(String message, String chatId) {
+        VectorStore workAppVectorStore = workAppVectorStoreProvider.getIfAvailable();
+        if (workAppVectorStore == null) {
+            log.info("RAG vector store is disabled, fallback to normal chat");
+            return doChat(message, chatId);
+        }
         // 查询重写
         String rewrittenMessage = queryRewriter.doQueryRewrite(message);
         ChatResponse chatResponse = chatClient
