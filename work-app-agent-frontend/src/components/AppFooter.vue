@@ -14,9 +14,9 @@
       <div class="footer-section">
         <h4>友情链接</h4>
         <div class="footer-links">
-          <a href="https://www.mianshiya.com" target="_blank">面试鸭</a>
-          <a href="#" target="_blank">编程导航</a>
-          <a href="#" target="_blank">代码小抄</a>
+          <a href="https://github.com/Li-Jinan" target="_blank" rel="noopener noreferrer">GitHub 主页</a>
+          <a href="https://github.com/Li-Jinan/workAppAgent" target="_blank" rel="noopener noreferrer">项目仓库</a>
+          <a href="https://github.com/Li-Jinan?tab=repositories" target="_blank" rel="noopener noreferrer">更多项目</a>
         </div>
       </div>
       
@@ -163,4 +163,4 @@ const currentYear = computed(() => new Date().getFullYear())
     height: 80px;
   }
 }
-</style> 
+</style>
