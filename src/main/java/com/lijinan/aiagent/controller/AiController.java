@@ -4,6 +4,7 @@ import com.lijinan.aiagent.agent.LijinanManus;
 import com.lijinan.aiagent.app.WorkApp;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
@@ -26,7 +27,8 @@ public class AiController {
     private ToolCallback[] allTools;
 
     @Resource
-    private ChatModel dashscopeChatModel;
+    @Qualifier("openAiChatModel")
+    private ChatModel chatModel;
 
     /**
      * 同步调用 AI 工作助手应用
@@ -99,7 +101,7 @@ public class AiController {
      */
     @GetMapping("/manus/chat")
     public SseEmitter doChatWithManus(String message) {
-        LijinanManus lijinanManus = new LijinanManus(allTools, dashscopeChatModel);
+        LijinanManus lijinanManus = new LijinanManus(allTools, chatModel);
         return lijinanManus.runStream(message);
     }
 }

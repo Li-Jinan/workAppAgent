@@ -19,6 +19,8 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -38,9 +40,9 @@ public class WorkApp {
     /**
      * 初始化 ChatClient
      *
-     * @param dashscopeChatModel
+     * @param chatModel
      */
-    public WorkApp(ChatModel dashscopeChatModel) {
+    public WorkApp(@Qualifier("openAiChatModel") ChatModel chatModel) {
 //        // 初始化基于文件的对话记忆
 //        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
 //        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
@@ -49,7 +51,7 @@ public class WorkApp {
                 .chatMemoryRepository(new InMemoryChatMemoryRepository())
                 .maxMessages(20)
                 .build();
-        chatClient = ChatClient.builder(dashscopeChatModel)
+        chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(),
@@ -121,15 +123,19 @@ public class WorkApp {
 
     // AI 工作知识库问答功能
 
+    @Lazy
     @Resource
     private VectorStore workAppVectorStore;
 
+    @Lazy
     @Resource
     private Advisor workAppRagCloudAdvisor;
 
+    @Lazy
     @Resource
     private VectorStore pgVectorVectorStore;
 
+    @Lazy
     @Resource
     private QueryRewriter queryRewriter;
 

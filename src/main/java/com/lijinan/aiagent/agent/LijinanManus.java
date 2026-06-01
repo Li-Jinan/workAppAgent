@@ -3,6 +3,7 @@ package com.lijinan.aiagent.agent;
 import com.lijinan.aiagent.advisor.MyLoggerAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class LijinanManus extends ToolCallAgent {
 
-    public LijinanManus(ToolCallback[] allTools, ChatModel dashscopeChatModel) {
+    public LijinanManus(ToolCallback[] allTools, @Qualifier("openAiChatModel") ChatModel chatModel) {
         super(allTools);
         this.setName("lijinanManus");
         String SYSTEM_PROMPT = """
@@ -29,7 +30,7 @@ public class LijinanManus extends ToolCallAgent {
         this.setNextStepPrompt(NEXT_STEP_PROMPT);
         this.setMaxSteps(20);
         // 初始化 AI 对话客户端
-        ChatClient chatClient = ChatClient.builder(dashscopeChatModel)
+        ChatClient chatClient = ChatClient.builder(chatModel)
                 .defaultAdvisors(new MyLoggerAdvisor())
                 .build();
         this.setChatClient(chatClient);
